@@ -70,6 +70,7 @@ h1 span { color: var(--accent); font-weight: 700; }
 .resource-links {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 22px;
   margin-top: 26px;
 }
