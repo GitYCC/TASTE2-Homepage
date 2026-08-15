@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction.">
+  <meta property="og:title" content="TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction">
+  <meta property="og:description" content="A text-aligned speech model and working VoiceBot for incremental, interruptible dialogue.">
+  <meta property="og:type" content="website">
+  <title>TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header class="paper-header">
+      <h1><span>TASTE2:</span> Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction</h1>
+
+      <div class="authors" aria-label="Authors">
+        <a href="mailto:yi-chang.chen@mtkresearch.com">Yi-Chang Chen<sup>*1</sup></a>
+        <a href="mailto:wilson-cw.chen@mtkresearch.com">Chun Wei Chen<sup>*2,3</sup></a>
+        <a href="mailto:dienruei.wu@mtkresearch.com">Dien-Ruei Wu<sup>*2,3</sup></a>
+        <span>Jie Lin<sup>3</sup></span>
+        <a href="mailto:hungyilee@ntu.edu.tw">Hung-yi Lee<sup>3</sup></a>
+        <a href="mailto:ds.shiu@mtkresearch.com">Da-Shan Shiu<sup>1</sup></a>
+      </div>
+
+      <div class="affiliations">
+        <span><sup>1</sup> MediaTek Research</span>
+        <span><sup>2</sup> Internship at MediaTek Research</span>
+        <span><sup>3</sup> National Taiwan University</span>
+        <small><sup>*</sup> Equal contribution</small>
+      </div>
+
+      <nav class="resource-links" aria-label="Project resources">
+        <a href="assets/taste2-paper.pdf">
+          <span class="resource-icon" aria-hidden="true">📄</span>
+          <span>Paper</span>
+        </a>
+        <a href="https://github.com/GitYCC/Paper-TASTE2">
+          <span class="resource-icon github-icon" aria-hidden="true">⌘</span>
+          <span>Code</span>
+        </a>
+      </nav>
+    </header>
+
+    <figure class="teaser">
+      <img src="assets/taste2-model.png" alt="TASTE2 architecture with a Speech Tokenizer, Spoken Language Model, and Speech Detokenizer.">
+      <figcaption>
+        <strong>TASTE2 aligns one continuous audio latent with every text token.</strong>
+        This preserves the text sequence length while carrying acoustic information through the entire speech dialogue stack.
+      </figcaption>
+    </figure>
+
+    <section id="abstract">
+      <h2>Abstract</h2>
+      <p>Full-duplex voice interaction requires more than converting one complete utterance into another. A system must process speech as it arrives, decide when to take or yield the floor, and stop when the user interrupts, while preserving pretrained linguistic competence and acoustic paralinguistic cues. We present <strong>TASTE2</strong>, which transforms the original utterance-level TASTE method into an incremental dialogue stack.</p>
+      <p>A shared text-token vocabulary removes word-level averaging across the Speech Tokenizer, Spoken LM, and Speech Detokenizer. Modality-aligned dialogue training predicts one continuous audio latent for each text token without interleaving heterogeneous token streams, and an incremental Speech Detokenizer enables streaming synthesis through CosyVoice2. We also build <strong>TASTE2 VoiceBot</strong>, a working research system that processes user speech incrementally, streams synthesized audio, and stops generation when the user barges in.</p>
+    </section>
+
+    <section id="method">
+      <h2>Method</h2>
+      <div class="three-columns">
+        <article>
+          <h3>Shared vocabulary</h3>
+          <p>A common text-token vocabulary removes word-level averaging and language-dependent segmentation.</p>
+        </article>
+        <article>
+          <h3>Aligned prediction</h3>
+          <p>The Spoken LM predicts one continuous audio latent per text token without lengthening its sequence.</p>
+        </article>
+        <article>
+          <h3>Streaming synthesis</h3>
+          <p>An incremental Speech Detokenizer produces S3 units and synthesizes audio through CosyVoice2.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="results">
+      <h2>Results</h2>
+      <div class="result-table-wrap">
+        <table>
+          <thead><tr><th>Evaluation</th><th>TASTE2 result</th><th>Finding</th></tr></thead>
+          <tbody>
+            <tr><td>LLaMA-Questions</td><td><strong>56.3%</strong></td><td>87.6% of the 64.3% text-only reference accuracy is retained.</td></tr>
+            <tr><td>User interruption</td><td><strong>0.060 s</strong></td><td>Immediate barge-in response with coherent continuation.</td></tr>
+            <tr><td>Full-Duplex-Bench v1.0</td><td><strong>4 best + 1 tie</strong></td><td>Strong pause handling, backchanneling, and interruption behavior.</td></tr>
+            <tr><td>Mean time to first audio</td><td><strong>2.701 s</strong></td><td>22% faster with TensorRT; synthesis remains the bottleneck.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Full-Duplex-Bench v1.0 contains 727 samples across five tasks. TASTE2 achieves the best value in four benchmark columns and ties the best in a fifth among the systems reported in the paper.</p>
+    </section>
+
+    <section id="voicebot">
+      <h2>TASTE2 VoiceBot</h2>
+      <p class="section-intro">The deployed system processes user speech incrementally, uses VAD-triggered and model-gated turn decisions, streams generated audio, and stops playback when the user barges in.</p>
+      <figure class="main-figure">
+        <img src="assets/voicebot-system.png" alt="TASTE2 VoiceBot deployment architecture with VAD, turn-taking prediction, streaming generation, and interruption handling." loading="lazy">
+        <figcaption>TASTE2 VoiceBot deployment architecture.</figcaption>
+      </figure>
+    </section>
+
+    <section id="conclusion">
+      <h2>Conclusion</h2>
+      <p>TASTE2 establishes text-aligned speech modeling as a practical foundation for full-duplex voice interaction. The model preserves most of its text reference's benchmark accuracy without lengthening the token sequence, while the deployed system demonstrates incremental processing, streaming synthesis, and interruption handling. Natural-conversation robustness, speech-generation latency, and feature-general paralinguistic control remain open challenges.</p>
+    </section>
+
+    <section id="citation">
+      <h2>Citation</h2>
+      <p class="citation-note">BibTeX will be added when the public paper record is available.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>This website is for academic and research purposes.</p>
+    <p>© 2026 MediaTek Research and National Taiwan University</p>
+  </footer>
+</body>
+</html>
