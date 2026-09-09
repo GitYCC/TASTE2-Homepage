@@ -206,6 +206,8 @@ p { margin: 0 0 14px; }
 }
 
 .design-notes article {
+  display: flex;
+  flex-direction: column;
   padding: 19px 21px;
   background: var(--soft);
   border: 1px solid var(--line);
@@ -213,7 +215,15 @@ p { margin: 0 0 14px; }
 }
 
 .design-notes h4 { margin: 0 0 9px; font-size: 1rem; }
-.design-notes p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+.design-notes p { margin: 0 0 12px; color: var(--muted); font-size: 0.94rem; }
+.design-notes p:last-child { margin-bottom: 0; }
+
+.resource-note {
+  max-width: 620px;
+  margin: 18px auto 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
 .design-notes strong { color: var(--text); }
 
 code {
