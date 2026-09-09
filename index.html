@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction.">
+  <meta name="description" content="TASTE2 pairs one continuous audio latent with every text token, retaining 98.2% of its text model's accuracy and handling barge-in at 0.060 s in a deployed full-duplex VoiceBot.">
   <meta property="og:title" content="TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction">
-  <meta property="og:description" content="A text-aligned speech model and working VoiceBot for incremental, interruptible dialogue.">
+  <meta property="og:description" content="One continuous audio latent per text token: 98.2% semantic retention, 0.060 s barge-in, and a working VoiceBot for incremental, interruptible dialogue.">
   <meta property="og:type" content="website">
   <title>TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction</title>
   <link rel="stylesheet" href="styles.css">
@@ -64,55 +64,57 @@
     <figure class="teaser">
       <img src="assets/taste2-model.png" alt="TASTE2 architecture with a Speech Tokenizer, Spoken Language Model, and Speech Detokenizer.">
       <figcaption>
-        <strong>TASTE2 aligns one continuous audio latent with every text token.</strong>
-        This preserves the text sequence length while carrying acoustic information through the entire speech dialogue stack.
+        <strong>One continuous audio latent travels with every text token.</strong>
+        Linguistic content stays in the text stream and acoustic realization rides alongside it, so the model emits speech at every step without the sequence ever growing longer than the text itself.
       </figcaption>
     </figure>
 
     <section id="abstract">
       <h2>Abstract</h2>
-      <p>Full-duplex voice interaction requires more than converting one complete utterance into another. A system must process speech as it arrives, decide when to take or yield the floor, and stop when the user interrupts, while preserving pretrained linguistic competence and acoustic paralinguistic cues. We present <strong>TASTE2</strong>, which transforms the original utterance-level TASTE method into an incremental dialogue stack.</p>
-      <p>A shared text-token vocabulary removes word-level averaging across the Speech Tokenizer, Spoken LM, and Speech Detokenizer. Modality-aligned dialogue training predicts one continuous audio latent for each text token without interleaving heterogeneous token streams, and an incremental Speech Detokenizer enables streaming synthesis through CosyVoice2. After speech and dialogue training, TASTE2 (Merge) reaches 56.3% on LLaMA-Questions against a 57.3% Qwen2.5-7B Instruct text-only reference, a <strong>98.2% accuracy retention</strong>. We also build <strong>TASTE2 VoiceBot</strong>, a working research system that processes user speech incrementally, streams synthesized audio, and stops generation when the user barges in.</p>
-      <p>Finally, to our knowledge, we provide the first systematic characterization of explicit paralinguistic control in a TASTE-based model. Speaking-rate control serves as a cross-strategy proof of concept after dialogue SFT, while emotion control is strategy dependent and the remaining attributes stay weak.</p>
+      <p>Full-duplex voice interaction asks for more than turning one finished utterance into another. A system has to process speech as it arrives, judge when to take or yield the floor, and stop when the user interrupts, all without losing the linguistic competence it inherited from text pretraining or the acoustic cues that make a reply sound like an answer. Those goals usually pull against each other: giving speech its own tokens lengthens the sequence and dilutes what text pretraining taught the model. We ask whether TASTE (Text-Aligned Speech Tokenization and Embedding) offers a way out, and present <strong>TASTE2</strong>, which rebuilds the original utterance-level method into an incremental dialogue stack.</p>
+      <p>A shared text-token vocabulary removes word-level averaging across the Speech Tokenizer, Spoken LM, and Speech Detokenizer. Modality-aligned dialogue training predicts one continuous audio latent for each text token instead of interleaving heterogeneous token streams, and an incremental Speech Detokenizer enables streaming synthesis through CosyVoice2. The sequence therefore stays exactly as long as the text, and after speech and dialogue training TASTE2 (Merge) reaches 56.3% on LLaMA-Questions against a 57.3% Qwen2.5-7B Instruct text-only reference &mdash; a <strong>98.2% accuracy retention</strong>, where interleaved systems in the same comparison retain between 29.7% and 83.1%.</p>
+      <p>We then take the model out of the benchmark harness. <strong>TASTE2 VoiceBot</strong> is a working research system that consumes user speech incrementally, streams synthesized audio, and halts generation the moment the user barges in. On Full-Duplex-Bench v1.0 it handles interruptions at 0.060 s while keeping its continuation coherent. To our knowledge we also give the first systematic characterization of explicit paralinguistic control in a TASTE-based model: speaking rate holds up under both training strategies after dialogue SFT, emotion control turns out to be strategy dependent, and the remaining attributes stay weak.</p>
     </section>
 
     <section id="method">
       <h2>Method</h2>
+      <p class="section-intro">The original TASTE aligns one speech representation with each text token, but it was built for complete utterances: its Whisper-based tokenizer and LLaMA tokenizer disagree on vocabulary, so representations are averaged over word boundaries, and its synthesis stack waits for the whole utterance. TASTE2 changes all three stages so the same alignment survives an incremental dialogue.</p>
       <div class="three-columns">
         <article>
           <h3>Shared vocabulary</h3>
-          <p>A common text-token vocabulary removes word-level averaging and language-dependent segmentation.</p>
+          <p>Tokenizer, Spoken LM, and Detokenizer speak one text-token vocabulary. Word-level averaging and the language-dependent segmentation it required both disappear.</p>
         </article>
         <article>
           <h3>Aligned prediction</h3>
-          <p>The Spoken LM predicts one continuous audio latent per text token without lengthening its sequence.</p>
+          <p>The Spoken LM emits one continuous audio latent per text token. Acoustic information appears at every step, yet no position is spent on it.</p>
         </article>
         <article>
           <h3>Streaming synthesis</h3>
-          <p>An incremental Speech Detokenizer produces S3 units and synthesizes audio through CosyVoice2.</p>
+          <p>An incremental Speech Detokenizer produces S3 units as text arrives and hands them to CosyVoice2, so audio starts before the reply is finished.</p>
         </article>
       </div>
     </section>
 
     <section id="results">
       <h2>Results</h2>
+      <p class="section-intro">The evaluations support a specific claim rather than a general one. Text-aligned tokenization keeps the text model's competence nearly intact and delivers the full-duplex behavior that depends most directly on that representation; latency and paralinguistic breadth are where it still falls short.</p>
       <div class="result-table-wrap">
         <table>
           <thead><tr><th>Evaluation</th><th>TASTE2 result</th><th>Finding</th></tr></thead>
           <tbody>
-            <tr><td>Semantic retention (LLaMA-Questions)</td><td><strong>98.2%</strong></td><td>56.3% accuracy against the 57.3% Qwen2.5-7B Instruct text-only reference, without lengthening the token sequence.</td></tr>
-            <tr><td>User interruption latency</td><td><strong>0.060 s</strong></td><td>Best among the compared systems, with a 1.000 takeover rate and 3.275 GPT-4o coherence.</td></tr>
-            <tr><td>Pause handling (synthetic TOR)</td><td><strong>0.146</strong></td><td>Lowest false-start rate on Full-Duplex-Bench v1.0; natural CANDOR conversations remain harder.</td></tr>
-            <tr><td>Mean time to first audio</td><td><strong>2.701 s</strong></td><td>22% faster with TensorRT; the Agent Speech Generator remains the bottleneck.</td></tr>
+            <tr><td>Semantic retention (LLaMA-Questions)</td><td><strong>98.2%</strong></td><td>56.3% accuracy against the 57.3% Qwen2.5-7B Instruct reference. The remaining gap to it comes mostly from how instruction tuning is introduced, not from speech modeling: TASTE2 (Direct) retains 92.4% under the same tokenizer and data.</td></tr>
+            <tr><td>User interruption latency</td><td><strong>0.060 s</strong></td><td>Fastest among the compared systems, at a 1.000 takeover rate and 3.275 GPT-4o coherence. Because the history is text, it can be truncated exactly where the user cut in, so the model resumes from what was actually heard.</td></tr>
+            <tr><td>Pause handling (synthetic TOR)</td><td><strong>0.146</strong></td><td>Lowest false-start rate on Full-Duplex-Bench v1.0. Natural CANDOR conversations are markedly harder, at 0.389.</td></tr>
+            <tr><td>Mean time to first audio</td><td><strong>2.701 s</strong></td><td>22% faster with TensorRT on two RTX A6000, and still well behind commercial voice assistants. The bottleneck sits in the Agent Speech Generator, not the Spoken LM.</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Numbers are for TASTE2 (Merge). Interleaved spoken LMs in the same comparison retain between 29.7% and 83.1% of their text reference, because acoustic tokens occupy sequence positions of their own.</p>
+      <p class="note">Numbers are for TASTE2 (Merge). Interleaved spoken LMs in the same comparison retain between 29.7% and 83.1% of their text reference, roughly in proportion to how much of the sequence their acoustic tokens claim.</p>
     </section>
 
     <section id="voicebot">
       <h2>TASTE2 VoiceBot</h2>
-      <p class="section-intro">The deployed system processes user speech incrementally, uses VAD-triggered and model-gated turn decisions, streams generated audio, and stops playback when the user barges in.</p>
+      <p class="section-intro">Benchmarks measure a model; a conversation exercises a system. The VoiceBot puts TASTE2 behind a live audio loop: VAD opens the floor, the model's own distribution decides whether to take it, generated audio streams out as it is produced, and playback stops when the user speaks over it. Routing the turn decision through the model rather than a separate classifier is what makes the barge-in behavior possible, and also what costs the deployment part of its latency.</p>
       <figure class="main-figure">
         <img src="assets/voicebot-system.png" alt="TASTE2 VoiceBot deployment architecture with VAD, turn-taking prediction, streaming generation, and interruption handling." loading="lazy">
         <figcaption>TASTE2 VoiceBot deployment architecture.</figcaption>
@@ -122,7 +124,7 @@
 
     <section id="paralinguistic">
       <h2>Paralinguistic Control</h2>
-      <p class="section-intro">Because one continuous audio latent travels with every text token, the Spoken LM can carry acoustic intent alongside its words. We test explicit, instruction-conditioned control on a 41-item subset of VStyle, rated 1&ndash;5 by three human raters. Speaking rate is the attribute that survives dialogue SFT under both training strategies; the samples below are two of its highest-rated generations.</p>
+      <p class="section-intro">If an audio latent accompanies every text token, the model has somewhere to put acoustic intent &mdash; but only if training gives it something to put there. We test instruction-conditioned control on a 41-item subset of VStyle, scored 1&ndash;5 by three human raters. Speaking rate is the one attribute that holds under both training strategies after dialogue SFT; the two samples below are among its highest-rated generations.</p>
 
       <div class="result-table-wrap samples-wrap">
         <table class="samples-table">
@@ -159,12 +161,13 @@
           </tbody>
         </table>
       </div>
-      <p class="note">Mean human rating on a 1&ndash;5 scale. Both models produce valid audio for 39 of the 41 items, so the limitation lies in control rather than generation. Stage 2 pretraining acts as an upper bound: attributes without a solid representational foundation are not recovered by dialogue SFT, and even attributes that succeed there, such as <em>whisper</em>, may not survive it.</p>
+      <p class="note">Mean human rating on a 1&ndash;5 scale. Both models return valid audio for 39 of the 41 items, so what fails is control, not generation. Stage 2 pretraining behaves like a ceiling: an attribute with no solid representation there is not rescued by dialogue SFT, and one that succeeds there, such as <em>whisper</em>, may still not survive it. Emotion is the least settled case &mdash; <em>angry</em> and <em>surprise</em> clear the threshold under Direct and collapse under Merge.</p>
     </section>
 
     <section id="conclusion">
       <h2>Conclusion</h2>
-      <p>TASTE2 establishes text-aligned speech modeling as a practical foundation for full-duplex voice interaction, and the evaluations support a specific claim rather than a general one. Pairing one continuous audio latent with each text token preserves 98.2% of the text reference's benchmark accuracy while emitting acoustic information at every step, and it delivers the full-duplex behavior that depends most directly on that representation: barge-in handling at 0.060 s and turn identification without a dedicated classifier. The deployed VoiceBot demonstrates the same stack under incremental processing and streaming synthesis. Natural-conversation robustness, speech-generation latency, and feature-general paralinguistic control remain open limits.</p>
+      <p>TASTE2 establishes text-aligned speech modeling as a practical foundation for full-duplex voice interaction, and getting there required rebuilding the original utterance-level method end to end. Pairing one continuous audio latent with each text token keeps 98.2% of the text reference's accuracy while the model emits acoustic information at every step, and it delivers the behavior that depends most directly on that representation: barge-in at 0.060 s, and turn identification at 0.908 takeover rate with no dedicated classifier. The VoiceBot shows the same stack running as a live system.</p>
+      <p>What remains open is stated as plainly. Natural conversations are still harder than synthetic ones, deployed synthesis is slow enough to be felt, and paralinguistic control works for speaking rate while most other attributes do not follow. The evidence points to Stage 2 representation quality as the place to look next.</p>
     </section>
 
     <section id="acknowledgments">
