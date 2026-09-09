@@ -81,16 +81,16 @@
       </figure>
 
       <h3 class="sub-head">Architecture</h3>
-      <div class="three-columns">
+      <div class="three-columns arch-cards">
         <article>
           <h3>Shared vocabulary</h3>
           <p>Speech Tokenizer, Spoken LM, and Speech Detokenizer all use the Spoken LM's tokenizer. Word-level averaging and its language-dependent segmentation disappear, and a standard chat template needs no conversion between token boundaries.</p>
-          <p class="detail">A frozen Distil-Whisper encoder feeds a decoder whose embedding layer is swapped for that vocabulary; its output goes to a Residual VQ instead of an LM head.</p>
+          <p class="detail">Frozen Distil-Whisper encoder; the decoder's embedding layer is swapped for that vocabulary and its output goes to a Residual VQ instead of an LM head.</p>
         </article>
         <article>
           <h3>Aligned prediction</h3>
           <p>Each position sums a text-token embedding with its aligned audio latent rather than adding a sequence element. The audio target is shifted by one position, so the model commits to a word before deciding how to say it.</p>
-          <p class="detail">Backbone: Qwen2.5-7B with LoRA. The latent, not a sequence of quantized indices, is the regression target.</p>
+          <p class="detail">Qwen2.5-7B backbone with LoRA; the regression target is the latent itself, not a sequence of quantized indices.</p>
         </article>
         <article>
           <h3>Streaming synthesis</h3>
@@ -102,23 +102,30 @@
       <h3 class="sub-head">Training</h3>
       <ol class="stages">
         <li>
-          <strong>Stage 1 &mdash; representation.</strong> The Speech Tokenizer and Speech Detokenizer are trained jointly, one learning to extract audio latents and the other to reconstruct audio from text-token and latent pairs. This stage fixes the latent space everything else depends on.
+          <span class="stage-label">Stage 1</span>
+          <h4>Representation</h4>
+          <p>The Speech Tokenizer and Speech Detokenizer are trained jointly, one learning to extract audio latents and the other to reconstruct audio from text-token and latent pairs. This stage fixes the latent space everything else depends on.</p>
         </li>
         <li>
-          <strong>Stage 2 &mdash; Spoken LM pretraining.</strong> A pretrained text LM is adapted with LoRA to predict aligned text&ndash;latent pairs over roughly 40,600 hours of speech from Emilia and LibriTTS. How well an acoustic attribute is represented here turns out to bound what any later fine-tuning can control.
+          <span class="stage-label">Stage 2</span>
+          <h4>Spoken LM pretraining</h4>
+          <p>A pretrained text LM is adapted with LoRA to predict aligned text&ndash;latent pairs over roughly 40,600 hours of speech from Emilia and LibriTTS. How well an acoustic attribute is represented here turns out to bound what any later fine-tuning can control.</p>
         </li>
         <li>
-          <strong>Stage SFT &mdash; dialogue.</strong> 143,507 dialogues (781,443 turns, 1,493 hours) teach response generation, turn boundaries, and interruption behavior. Natural corpora rarely mark interruptions, so 1,027 of those hours are synthesized specifically to contain barge-ins, disfluencies, and explicit style requests.
+          <span class="stage-label">Stage SFT</span>
+          <h4>Dialogue</h4>
+          <p>143,507 dialogues (781,443 turns, 1,493 hours) teach response generation, turn boundaries, and interruption behavior. Natural corpora rarely mark interruptions, so 1,027 of those hours are synthesized specifically to contain barge-ins, disfluencies, and explicit style requests.</p>
         </li>
       </ol>
 
-      <div class="three-columns two-columns">
+      <h3 class="sub-head">Two design choices</h3>
+      <div class="design-notes">
         <article>
-          <h3>Two ways to get instruction following</h3>
+          <h4>Two ways to get instruction following</h4>
           <p><strong>Merge</strong> starts Stage 2 from Qwen2.5-7B and adds an instruction-following task vector by TIES merging before dialogue SFT, at no extra training cost. <strong>Direct</strong> simply starts from Qwen2.5-7B-Instruct. Everything else is identical, which makes the pair a controlled comparison: the retention gap between them (98.2% against 92.4%) locates part of the loss in instruction tuning rather than in speech modeling.</p>
         </article>
         <article>
-          <h3>Teaching a model to be interrupted</h3>
+          <h4>Teaching a model to be interrupted</h4>
           <p>Turns are laid out in the ChatML template Qwen2.5 already uses, with audio attached to each text position instead of getting special tokens of its own. For an interrupted assistant turn, the loss weight on the closing <code>&lt;|im_end|&gt;</code> is set to zero &mdash; the turn ended, but not because the model chose to end it. The resulting <code>&lt;|im_end|&gt;</code> probability then serves directly as the turn-decision gate at deployment, with no separate classifier to train.</p>
         </article>
       </div>

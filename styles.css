@@ -143,27 +143,78 @@ p { margin: 0 0 14px; }
   border-radius: 7px;
 }
 
-.three-columns p { margin: 0 0 10px; color: var(--muted); font-size: 0.94rem; }
+.three-columns p { margin: 0 0 12px; color: var(--muted); font-size: 0.94rem; }
 .three-columns p:last-child { margin-bottom: 0; }
-.two-columns { grid-template-columns: repeat(2, 1fr); margin-top: 16px; }
+
+.arch-cards article { display: flex; flex-direction: column; }
 
 .detail {
-  padding-top: 9px;
+  margin-top: auto !important;
+  padding-top: 11px;
   border-top: 1px dashed var(--line);
   font-size: 0.86rem !important;
 }
 
 .sub-head {
-  margin: 30px 0 14px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 40px 0 18px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 
-.stages { margin: 0; padding-left: 20px; }
-.stages li { margin-bottom: 11px; color: var(--muted); }
-.stages strong { color: var(--text); }
+.sub-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stage;
+}
+
+.stages li { padding-left: 16px; border-left: 2px solid var(--accent); }
+
+.stage-label {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.stages h4 { margin: 0 0 7px; font-size: 1rem; }
+.stages p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+
+.design-notes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.design-notes article {
+  padding: 19px 21px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.design-notes h4 { margin: 0 0 9px; font-size: 1rem; }
+.design-notes p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+.design-notes strong { color: var(--text); }
 
 code {
   padding: 1px 4px;
@@ -254,7 +305,7 @@ footer p { margin: 2px; }
   .paper-header { padding-top: 38px; }
   h1 { font-size: 2rem; }
   .authors { font-size: 1rem; }
-  .three-columns { grid-template-columns: 1fr; }
+  .three-columns, .stages, .design-notes { grid-template-columns: 1fr; }
   #abstract p, #conclusion p { text-align: left; }
   .teaser { margin-bottom: 44px; overflow-x: auto; }
   .teaser img { min-width: 680px; }
