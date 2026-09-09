@@ -149,7 +149,43 @@ table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
 th, td { padding: 13px 15px; text-align: left; border-bottom: 1px solid var(--line); }
 th { background: var(--soft); font-weight: 600; }
 tbody tr:last-child td { border-bottom: 0; }
-td:nth-child(2) { white-space: nowrap; color: var(--accent); }
+#results td:nth-child(2) { white-space: nowrap; color: var(--accent); }
+#paralinguistic td:first-child { font-family: ui-monospace, Menlo, monospace; }
+
+.samples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 26px;
+  margin-bottom: 26px;
+}
+
+.sample-group h3 {
+  margin-bottom: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.05rem;
+}
+
+.sample {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.sample figcaption {
+  max-width: none;
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.sample audio { width: 100%; height: 34px; }
+
+.sample-meta { margin: 8px 0 0; color: var(--muted); font-size: 0.82rem; }
+
+.demo-note { text-align: center; }
 
 .note, .citation-note {
   margin-top: 10px;
@@ -172,6 +208,19 @@ td:nth-child(2) { white-space: nowrap; color: var(--accent); }
 #citation h2 { font-size: 1.5rem; margin-bottom: 5px; }
 #citation p { margin: 0; }
 
+.bibtex {
+  margin: 12px 0 0;
+  padding: 14px;
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-align: left;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 footer {
   width: min(100% - 40px, 980px);
   margin: 10px auto 0;
@@ -189,7 +238,7 @@ footer p { margin: 2px; }
   .paper-header { padding-top: 38px; }
   h1 { font-size: 2rem; }
   .authors { font-size: 1rem; }
-  .three-columns { grid-template-columns: 1fr; }
+  .three-columns, .samples { grid-template-columns: 1fr; }
   #abstract p, #conclusion p { text-align: left; }
   .teaser { margin-bottom: 44px; overflow-x: auto; }
   .teaser img { min-width: 680px; }

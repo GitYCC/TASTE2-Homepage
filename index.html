@@ -38,23 +38,23 @@
       </div>
 
       <nav class="resource-links" aria-label="Project resources">
-        <a href="assets/taste2-paper.pdf">
+        <a href="https://arxiv.org/abs/2609.08956" target="_blank" rel="noopener noreferrer">
           <span class="resource-icon" aria-hidden="true">📄</span>
           <span>Paper</span>
         </a>
-        <a href="https://github.com/GitYCC/TASTE-SpokenLM-2">
+        <a href="https://github.com/GitYCC/TASTE-SpokenLM-2" target="_blank" rel="noopener noreferrer">
           <span class="resource-icon github-icon" aria-hidden="true">&lt;/&gt;</span>
           <span>Spoken LM</span>
         </a>
-        <a href="https://github.com/GitYCC/TASTE-Voice-Bot">
+        <a href="https://github.com/GitYCC/TASTE-Voice-Bot" target="_blank" rel="noopener noreferrer">
           <span class="resource-icon github-icon" aria-hidden="true">⇄</span>
           <span>VoiceBot</span>
         </a>
-        <a href="https://huggingface.co/collections/YC-Chen/taste2">
+        <a href="https://huggingface.co/collections/YC-Chen/taste2" target="_blank" rel="noopener noreferrer">
           <span class="resource-icon" aria-hidden="true">🤗</span>
           <span>Checkpoints</span>
         </a>
-        <a href="https://huggingface.co/datasets/wilzzzz/paralinguistic_dialogues">
+        <a href="https://huggingface.co/datasets/wilzzzz/paralinguistic_dialogues" target="_blank" rel="noopener noreferrer">
           <span class="resource-icon" aria-hidden="true">▦</span>
           <span>Dataset</span>
         </a>
@@ -72,7 +72,8 @@
     <section id="abstract">
       <h2>Abstract</h2>
       <p>Full-duplex voice interaction requires more than converting one complete utterance into another. A system must process speech as it arrives, decide when to take or yield the floor, and stop when the user interrupts, while preserving pretrained linguistic competence and acoustic paralinguistic cues. We present <strong>TASTE2</strong>, which transforms the original utterance-level TASTE method into an incremental dialogue stack.</p>
-      <p>A shared text-token vocabulary removes word-level averaging across the Speech Tokenizer, Spoken LM, and Speech Detokenizer. Modality-aligned dialogue training predicts one continuous audio latent for each text token without interleaving heterogeneous token streams, and an incremental Speech Detokenizer enables streaming synthesis through CosyVoice2. We also build <strong>TASTE2 VoiceBot</strong>, a working research system that processes user speech incrementally, streams synthesized audio, and stops generation when the user barges in.</p>
+      <p>A shared text-token vocabulary removes word-level averaging across the Speech Tokenizer, Spoken LM, and Speech Detokenizer. Modality-aligned dialogue training predicts one continuous audio latent for each text token without interleaving heterogeneous token streams, and an incremental Speech Detokenizer enables streaming synthesis through CosyVoice2. After speech and dialogue training, TASTE2 (Merge) reaches 56.3% on LLaMA-Questions against a 57.3% Qwen2.5-7B Instruct text-only reference, a <strong>98.2% accuracy retention</strong>. We also build <strong>TASTE2 VoiceBot</strong>, a working research system that processes user speech incrementally, streams synthesized audio, and stops generation when the user barges in.</p>
+      <p>Finally, to our knowledge, we provide the first systematic characterization of explicit paralinguistic control in a TASTE-based model. Speaking-rate control serves as a cross-strategy proof of concept after dialogue SFT, while emotion control is strategy dependent and the remaining attributes stay weak.</p>
     </section>
 
     <section id="method">
@@ -99,14 +100,14 @@
         <table>
           <thead><tr><th>Evaluation</th><th>TASTE2 result</th><th>Finding</th></tr></thead>
           <tbody>
-            <tr><td>LLaMA-Questions</td><td><strong>56.3%</strong></td><td>87.6% of the 64.3% text-only reference accuracy is retained.</td></tr>
-            <tr><td>User interruption</td><td><strong>0.060 s</strong></td><td>Immediate barge-in response with coherent continuation.</td></tr>
-            <tr><td>Full-Duplex-Bench v1.0</td><td><strong>4 best + 1 tie</strong></td><td>Strong pause handling, backchanneling, and interruption behavior.</td></tr>
-            <tr><td>Mean time to first audio</td><td><strong>2.701 s</strong></td><td>22% faster with TensorRT; synthesis remains the bottleneck.</td></tr>
+            <tr><td>Semantic retention (LLaMA-Questions)</td><td><strong>98.2%</strong></td><td>56.3% accuracy against the 57.3% Qwen2.5-7B Instruct text-only reference, without lengthening the token sequence.</td></tr>
+            <tr><td>User interruption latency</td><td><strong>0.060 s</strong></td><td>Best among the compared systems, with a 1.000 takeover rate and 3.275 GPT-4o coherence.</td></tr>
+            <tr><td>Pause handling (synthetic TOR)</td><td><strong>0.146</strong></td><td>Lowest false-start rate on Full-Duplex-Bench v1.0; natural CANDOR conversations remain harder.</td></tr>
+            <tr><td>Mean time to first audio</td><td><strong>2.701 s</strong></td><td>22% faster with TensorRT; the Agent Speech Generator remains the bottleneck.</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Full-Duplex-Bench v1.0 contains 727 samples across five tasks. TASTE2 achieves the best value in four benchmark columns and ties the best in a fifth among the systems reported in the paper.</p>
+      <p class="note">Numbers are for TASTE2 (Merge). Interleaved spoken LMs in the same comparison retain between 29.7% and 83.1% of their text reference, because acoustic tokens occupy sequence positions of their own.</p>
     </section>
 
     <section id="voicebot">
@@ -116,11 +117,72 @@
         <img src="assets/voicebot-system.png" alt="TASTE2 VoiceBot deployment architecture with VAD, turn-taking prediction, streaming generation, and interruption handling." loading="lazy">
         <figcaption>TASTE2 VoiceBot deployment architecture.</figcaption>
       </figure>
+      <p class="note demo-note">A recorded interactive session with the deployed VoiceBot is available <a href="https://youtu.be/rGdQ8DK2zVw" target="_blank" rel="noopener noreferrer">here</a>.</p>
+    </section>
+
+    <section id="paralinguistic">
+      <h2>Paralinguistic Control</h2>
+      <p class="section-intro">Because one continuous audio latent travels with every text token, the Spoken LM can carry acoustic intent alongside its words. We test explicit, instruction-conditioned control on a 41-item subset of VStyle, rated 1&ndash;5 by three human raters. Speaking rate is the attribute that survives dialogue SFT under both training strategies; the samples below are among its highest-rated generations.</p>
+
+      <div class="samples">
+        <div class="sample-group">
+          <h3>Fast speaking rate</h3>
+          <figure class="sample">
+            <figcaption>&ldquo;With a very fast tempo, count by threes from three up to fifteen.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/fast_merge_86.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Merge) &middot; rated 5.0</p>
+          </figure>
+          <figure class="sample">
+            <figcaption>&ldquo;In a very fast tempo, recite the seven days of the week.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/fast_direct_80.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Direct) &middot; rated 5.0</p>
+          </figure>
+          <figure class="sample">
+            <figcaption>&ldquo;At a very fast speed, name three items you might find in a kitchen.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/fast_merge_83.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Merge) &middot; rated 4.7</p>
+          </figure>
+        </div>
+
+        <div class="sample-group">
+          <h3>Slow speaking rate</h3>
+          <figure class="sample">
+            <figcaption>&ldquo;With a very slow pace, count the months from January to June.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/slow_direct_78.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Direct) &middot; rated 5.0</p>
+          </figure>
+          <figure class="sample">
+            <figcaption>&ldquo;With a very slow pace, count from one to five.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/slow_merge_70.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Merge) &middot; rated 4.7</p>
+          </figure>
+          <figure class="sample">
+            <figcaption>&ldquo;In a very slow tempo, say: The sun is setting behind the mountains.&rdquo;</figcaption>
+            <audio controls preload="none" src="assets/audio/slow_direct_69.mp3"></audio>
+            <p class="sample-meta">TASTE2 (Direct) &middot; rated 4.3</p>
+          </figure>
+        </div>
+      </div>
+
+      <div class="result-table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>Stage 2 continuation</th><th>TASTE2 (Merge)</th><th>TASTE2 (Direct)</th></tr></thead>
+          <tbody>
+            <tr><td>fast</td><td>4.87</td><td>4.15</td><td>3.53</td></tr>
+            <tr><td>slow</td><td>4.27</td><td>3.00</td><td>3.77</td></tr>
+            <tr><td>surprise</td><td>3.33</td><td>2.42</td><td>3.42</td></tr>
+            <tr><td>angry</td><td>2.00</td><td>1.33</td><td>3.33</td></tr>
+            <tr><td>happy</td><td>3.80</td><td>1.67</td><td>1.67</td></tr>
+            <tr><td>whisper</td><td>3.27</td><td>1.00</td><td>1.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Mean human rating on a 1&ndash;5 scale. Both models produce valid audio for 39 of the 41 items, so the limitation lies in control rather than generation. Stage 2 pretraining acts as an upper bound: attributes without a solid representational foundation are not recovered by dialogue SFT, and even attributes that succeed there, such as <em>whisper</em>, may not survive it.</p>
     </section>
 
     <section id="conclusion">
       <h2>Conclusion</h2>
-      <p>TASTE2 establishes text-aligned speech modeling as a practical foundation for full-duplex voice interaction. The model preserves most of its text reference's benchmark accuracy without lengthening the token sequence, while the deployed system demonstrates incremental processing, streaming synthesis, and interruption handling. Natural-conversation robustness, speech-generation latency, and feature-general paralinguistic control remain open challenges.</p>
+      <p>TASTE2 establishes text-aligned speech modeling as a practical foundation for full-duplex voice interaction, and the evaluations support a specific claim rather than a general one. Pairing one continuous audio latent with each text token preserves 98.2% of the text reference's benchmark accuracy while emitting acoustic information at every step, and it delivers the full-duplex behavior that depends most directly on that representation: barge-in handling at 0.060 s and turn identification without a dedicated classifier. The deployed VoiceBot demonstrates the same stack under incremental processing and streaming synthesis. Natural-conversation robustness, speech-generation latency, and feature-general paralinguistic control remain open limits.</p>
     </section>
 
     <section id="acknowledgments">
@@ -130,7 +192,14 @@
 
     <section id="citation">
       <h2>Citation</h2>
-      <p class="citation-note">BibTeX will be added when the public paper record is available.</p>
+      <pre class="bibtex">@article{chen2026taste2,
+  title   = {TASTE2: Text-Aligned Speech Modeling and Deployment toward Full-Duplex Voice Interaction},
+  author  = {Chen, Yi-Chang and Chen, Chun Wei and Wu, Dien-Ruei and Lin, Jie and
+             Fu, Yu-Kuan and Lin, Yang-Hsien and Huang, Eddie TC and See, Simon and
+             Lee, Hung-yi and Shiu, Da-Shan},
+  journal = {arXiv preprint arXiv:2609.08956},
+  year    = {2026}
+}</pre>
     </section>
   </main>
 
